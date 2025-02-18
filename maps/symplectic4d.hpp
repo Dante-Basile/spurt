@@ -63,9 +63,10 @@ private:
 
 public:
 
-    static void to_range(double& x) {
+    static void to_range(double& x, int& rot_ct) {
         if (x < -0.5 || x >= 0.5) {
             x -= std::floor(x);
+            ++rot_ct;
             if (x >= 0.5) x -= 1;
             if (x < -0.5 || x >= 0.5) {
                 std::cerr << "ERROR in to_range: " << x << std::endl;
@@ -73,9 +74,9 @@ public:
         }
     }
 
-    static void to_domain(state_type& x) {
+    static void to_domain(state_type& x, int rot_ct) {
         for (int i=0; i<4; ++i) {
-            to_range(x[i]);
+            to_range(x[i], rot_ct);
         }
     }
 
@@ -85,44 +86,46 @@ public:
 
     symplectic4D(double k1, double k2, double eps) : k1(k1), k2(k2), eps(eps) {}
 
-    state_type map(const state_type& x, int n = 1) const {
+    state_type map(const state_type& x, int& rot_ct,
+                   int n = 1) const {
         state_type y(x);
 
         if (n>0) {
             for (int i=0; i<n; ++i) {
                 forward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
                 backward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
             }
         }
         return y;
     }
 
-    void map(const state_type& x, std::vector< state_type >& hits, int n = 1) const {
+    void map(const state_type& x, int& rot_ct,
+             std::vector< state_type >& hits, int n = 1) const {
         hits.resize(std::abs<int>(n));
         state_type y(x);
         if (n>0) {
             for (int i=0; i<n; ++i) {
                 forward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
                 hits[i] = y;
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
                 backward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
                 hits[i] = y;
             }
         }
     }
 
-    void map(const state_type& x,
+    void map(const state_type& x, int& rot_ct,
              std::vector<std::pair<state_type, deriv_type> >& out, int niter,
              double eps=0) const {
         out.resize(std::abs<int>(niter));
@@ -133,7 +136,7 @@ public:
                 if (i>0) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
                 forward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
                 out[i].first = y;
             }
         }
@@ -143,16 +146,16 @@ public:
                 if (i>niter) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
                 backward(y[0], y[1], y[2], y[3]);
-                to_domain(y);
+                to_domain(y, rot_ct);
                 out[i].first = y;
             }
         }
     }
 
     std::pair<state_type, deriv_type>
-    map_and_jacobian(const state_type& in, int niter, double eps=0) const {
+    map_and_jacobian(const state_type& in, int& rot_ct, int niter, double eps=0) const {
         std::vector<std::pair<state_type, deriv_type> > out;
-        map(in, out, niter);
+        map(in, rot_ct, out, niter);
         if (out.size() != std::abs(niter)) {
             throw map_undefined();
         }
@@ -179,6 +182,7 @@ public:
     int section_dim;
     typedef vec3 point_type;
     typedef vec4 state_type;
+    int rot_ct;
 
     slab_map(int _dim=3, double _thickness=1.0e-4)
         : thickness(_thickness), section_dim(_dim) {}
