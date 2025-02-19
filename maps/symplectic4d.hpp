@@ -9,6 +9,7 @@ namespace spurt {
 
 class symplectic4D {
 public:
+    typedef unsigned long int uli;
     typedef vec4 state_type;
     typedef mat4 deriv_type;
     typedef spurt::bounding_box<state_type> bounds_type;
@@ -63,7 +64,17 @@ private:
 
 public:
 
-    static void to_range(double& x, int& rot_ct) {
+    static void to_range(double& x) {
+        if (x < -0.5 || x >= 0.5) {
+            x -= std::floor(x);
+            if (x >= 0.5) x -= 1;
+            if (x < -0.5 || x >= 0.5) {
+                std::cerr << "ERROR in to_range: " << x << std::endl;
+            }
+        }
+    }
+
+    static void to_range(double& x, uli& rot_ct) {
         if (x < -0.5 || x >= 0.5) {
             x -= std::floor(x);
             ++rot_ct;
@@ -74,7 +85,13 @@ public:
         }
     }
 
-    static void to_domain(state_type& x, int rot_ct) {
+    static void to_domain(state_type& x) {
+        for (int i=0; i<4; ++i) {
+            to_range(x[i]);
+        }
+    }
+
+    static void to_domain(state_type& x, uli& rot_ct) {
         for (int i=0; i<4; ++i) {
             to_range(x[i], rot_ct);
         }
@@ -86,7 +103,7 @@ public:
 
     symplectic4D(double k1, double k2, double eps) : k1(k1), k2(k2), eps(eps) {}
 
-    state_type map(const state_type& x, int& rot_ct,
+    state_type map(const state_type& x, uli& rot_ct,
                    int n = 1) const {
         state_type y(x);
 
@@ -105,7 +122,7 @@ public:
         return y;
     }
 
-    void map(const state_type& x, int& rot_ct,
+    void map(const state_type& x, uli& rot_ct,
              std::vector< state_type >& hits, int n = 1) const {
         hits.resize(std::abs<int>(n));
         state_type y(x);
@@ -125,7 +142,7 @@ public:
         }
     }
 
-    void map(const state_type& x, int& rot_ct,
+    void map(const state_type& x, uli& rot_ct,
              std::vector<std::pair<state_type, deriv_type> >& out, int niter,
              double eps=0) const {
         out.resize(std::abs<int>(niter));
@@ -153,7 +170,7 @@ public:
     }
 
     std::pair<state_type, deriv_type>
-    map_and_jacobian(const state_type& in, int& rot_ct, int niter, double eps=0) const {
+    map_and_jacobian(const state_type& in, uli& rot_ct, int niter, double eps=0) const {
         std::vector<std::pair<state_type, deriv_type> > out;
         map(in, rot_ct, out, niter);
         if (out.size() != std::abs(niter)) {
@@ -180,9 +197,10 @@ class slab_map {
 public:
     double thickness;
     int section_dim;
+    typedef unsigned long int uli;
     typedef vec3 point_type;
     typedef vec4 state_type;
-    int rot_ct;
+    uli rot_ct;
 
     slab_map(int _dim=3, double _thickness=1.0e-4)
         : thickness(_thickness), section_dim(_dim) {}
@@ -197,15 +215,16 @@ public:
         orbit.push_back(seed);
         state_type s = seed;
         map.to_domain(s);
-        s = _run(hits, orbit, map, s, max_iter);
+        rot_ct = 0;
+        s = _run(hits, orbit, map, s, rot_ct, max_iter);
     }
 
 private:
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
                     std::vector<state_type>& orbit, const Map& map,
-                    const state_type& seed, int niter) {
-        map.map(seed, orbit, niter);
+                    const state_type& seed, uli& rot_ct, int niter) {
+        map.map(seed, rot_ct, orbit, niter);
         for (int i=0; i<orbit.size(); ++i) {
             if (std::abs(orbit[i][section_dim]) <= thickness) {
                 hits.push_back(orbit[i]);
