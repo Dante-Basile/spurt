@@ -152,15 +152,17 @@ int main(int argc, const char* argv[]) {
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
             nrrd_utils::writeNrrdFromContainers(reinterpret_cast<double *>(&orbit[0]), name, dims);
 
-            name = filename + "_rot_ct_n=" + std::to_string(n)
+            name = filename + "_rot_cts_n=" + std::to_string(n)
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".txt";
             std::ofstream fs(name);
-            fs << slab.rot_ct << std::endl;
+            fs << slab.rot_cts[0] << " " << slab.rot_cts[1] << " " << slab.rot_cts[2]
+                << " " << slab.rot_cts[3] << std::endl;
             fs.close();
 
             std::cout << "\nhits contains " << hits.size() << " points and "
                 << "orbit contains " << orbit.size() << " points and "
-                << " has rotation count " << slab.rot_ct << " full rotations\n";
+                << " has rotation count " << slab.rot_cts[0] << " " << slab.rot_cts[1]
+                << " " << slab.rot_cts[2] << " " << slab.rot_cts[3] << " full rotations\n";
 
         }
     });
