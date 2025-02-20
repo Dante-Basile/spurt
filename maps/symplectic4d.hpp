@@ -9,7 +9,7 @@ namespace spurt {
 
 class symplectic4D {
 public:
-    typedef vec6 state_type;
+    typedef vec8 state_type;
     typedef mat4 deriv_type;
     typedef spurt::bounding_box<state_type> bounds_type;
 
@@ -18,26 +18,32 @@ public:
     double k1, k2, eps;
 
 private:
-    void forward(double& p1, double& p2, double& q1, double& q2, double& a1, double& a2) const {
+    void forward(double& p1, double& p2, double& q1, double& q2,
+        double& p1t, double& p2t, double& q1t, double& q2t) const {
         q1 += p1;
+        q1t += p1;
         q2 += p2;
+        q2t += p2;
         double u1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi * (q1 + q2));
         double u2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi * (q1 + q2));
         p1 += u1;
+        p1t += u1;
         p2 += u2;
-        a1 += u1;
-        a2 += u2;
+        p2t += u2;
     }
 
-    void backward(double& p1, double& p2, double& q1, double& q2, double& a1, double& a2) const {
+    void backward(double& p1, double& p2, double& q1, double& q2,
+        double& p1t, double& p2t, double& q1t, double& q2t) const {
         double u1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi *(q1 + q2));
         double u2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi *(q1 + q2));
         p1 -= u1;
+        p1t -= u1;
         p2 -= u2;
-        a1 -= u1;
-        a2 -= u2;
+        p2t -= u2;
         q1 -= p1;
+        q1t -= p1;
         q2 -= p2;
+        q2t -= p2;
     }
 
     deriv_type forwardJ(double p1, double p2, double q1, double q2) const {
@@ -98,13 +104,13 @@ public:
 
         if (n>0) {
             for (int i=0; i<n; ++i) {
-                forward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
-                backward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
             }
         }
@@ -116,14 +122,14 @@ public:
         state_type y(x);
         if (n>0) {
             for (int i=0; i<n; ++i) {
-                forward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
                 hits[i] = y;
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
-                backward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
                 hits[i] = y;
             }
@@ -140,7 +146,7 @@ public:
                 deriv_type J = forwardJ(y[0], y[1], y[2], y[3]);
                 if (i>0) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
-                forward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
                 out[i].first = y;
             }
@@ -150,7 +156,7 @@ public:
                 deriv_type J = backwardJ(y[0], y[1], y[2], y[3]);
                 if (i>niter) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
-                backward(y[0], y[1], y[2], y[3], y[4], y[5]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                 to_domain(y);
                 out[i].first = y;
             }
@@ -186,7 +192,7 @@ public:
     double thickness;
     int section_dim;
     typedef vec3 point_type;
-    typedef vec6 state_type;
+    typedef vec8 state_type;
 
     slab_map(int _dim=3, double _thickness=1.0e-4)
         : thickness(_thickness), section_dim(_dim) {}
