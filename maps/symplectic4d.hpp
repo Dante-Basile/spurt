@@ -9,6 +9,7 @@ namespace spurt {
 
 class symplectic4D {
 public:
+    typedef unsigned long int uli;
     typedef vec8 state_type;
     typedef mat4 deriv_type;
     typedef spurt::bounding_box<state_type> bounds_type;
@@ -19,7 +20,7 @@ public:
 
 private:
     void forward(double& p1, double& p2, double& q1, double& q2,
-        double& p1t, double& p2t, double& q1t, double& q2t) const {
+        double& p1t, double& p2t, double& q1t, double& q2t, uli& iter_ct) const {
         q1 += p1;
         q1t += p1;
         q2 += p2;
@@ -30,10 +31,11 @@ private:
         p1t += u1;
         p2 += u2;
         p2t += u2;
+        ++iter_ct;
     }
 
     void backward(double& p1, double& p2, double& q1, double& q2,
-        double& p1t, double& p2t, double& q1t, double& q2t) const {
+        double& p1t, double& p2t, double& q1t, double& q2t, uli& iter_ct) const {
         double u1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi *(q1 + q2));
         double u2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi *(q1 + q2));
         p1 -= u1;
@@ -44,6 +46,7 @@ private:
         q1t -= p1;
         q2 -= p2;
         q2t -= p2;
+        ++iter_ct;
     }
 
     deriv_type forwardJ(double p1, double p2, double q1, double q2) const {
@@ -99,37 +102,38 @@ public:
 
     symplectic4D(double k1, double k2, double eps) : k1(k1), k2(k2), eps(eps) {}
 
-    state_type map(const state_type& x, int n = 1) const {
+    state_type map(const state_type& x, uli& iter_ct, int n = 1) const {
         state_type y(x);
 
         if (n>0) {
             for (int i=0; i<n; ++i) {
-                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
-                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
             }
         }
         return y;
     }
 
-    void map(const state_type& x, std::vector< state_type >& hits, int n = 1) const {
+    void map(const state_type& x, std::vector< state_type >& hits, uli& iter_ct,
+        int n = 1) const {
         hits.resize(std::abs<int>(n));
         state_type y(x);
         if (n>0) {
             for (int i=0; i<n; ++i) {
-                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
                 hits[i] = y;
             }
         }
         else if (n<0) {
             for (int i=n; i<0; ++i) {
-                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
                 hits[i] = y;
             }
@@ -137,8 +141,8 @@ public:
     }
 
     void map(const state_type& x,
-             std::vector<std::pair<state_type, deriv_type> >& out, int niter,
-             double eps=0) const {
+             std::vector<std::pair<state_type, deriv_type> >& out, uli& iter_ct,
+             int niter, double eps=0) const {
         out.resize(std::abs<int>(niter));
         state_type y = x;
         if (niter > 0) {
@@ -146,7 +150,7 @@ public:
                 deriv_type J = forwardJ(y[0], y[1], y[2], y[3]);
                 if (i>0) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
-                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                forward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
                 out[i].first = y;
             }
@@ -156,7 +160,7 @@ public:
                 deriv_type J = backwardJ(y[0], y[1], y[2], y[3]);
                 if (i>niter) out[i].second = out[i-1].second * J;
                 else out[i].second = J;
-                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                backward(y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7], iter_ct);
                 to_domain(y);
                 out[i].first = y;
             }
@@ -164,9 +168,10 @@ public:
     }
 
     std::pair<state_type, deriv_type>
-    map_and_jacobian(const state_type& in, int niter, double eps=0) const {
+    map_and_jacobian(const state_type& in, uli& iter_ct, int niter,
+        double eps=0) const {
         std::vector<std::pair<state_type, deriv_type> > out;
-        map(in, out, niter);
+        map(in, out, iter_ct, niter);
         if (out.size() != std::abs(niter)) {
             throw map_undefined();
         }
@@ -191,8 +196,10 @@ class slab_map {
 public:
     double thickness;
     int section_dim;
+    typedef unsigned long int uli;
     typedef vec3 point_type;
     typedef vec8 state_type;
+    uli iter_ct;
 
     slab_map(int _dim=3, double _thickness=1.0e-4)
         : thickness(_thickness), section_dim(_dim) {}
@@ -207,15 +214,16 @@ public:
         orbit.push_back(seed);
         state_type s = seed;
         map.to_domain(s);
-        s = _run(hits, orbit, map, s, max_iter);
+        iter_ct = 0;
+        s = _run(hits, orbit, map, s, iter_ct, max_iter);
     }
 
 private:
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
                     std::vector<state_type>& orbit, const Map& map,
-                    const state_type& seed, int niter) {
-        map.map(seed, orbit, niter);
+                    const state_type& seed, uli& iter_cts, int niter) {
+        map.map(seed, orbit, iter_cts, niter);
         for (int i=0; i<orbit.size(); ++i) {
             if (std::abs(orbit[i][section_dim]) <= thickness) {
                 hits.push_back(orbit[i]);

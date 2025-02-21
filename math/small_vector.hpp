@@ -845,7 +845,7 @@ namespace spurt
     typedef small_vector<double, 4> vec4;
     typedef small_vector<double, 5> vec5;
     typedef small_vector<double, 6> vec6;
-    typedef small_vector<double, 8> vec8
+    typedef small_vector<double, 8> vec8;
 
     typedef small_vector<double, 1> dvec1;
     typedef small_vector<double, 2> dvec2;
