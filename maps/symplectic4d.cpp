@@ -103,7 +103,8 @@ int main(int argc, const char* argv[]) {
             progress.update(tbb_progress_counter);
             orbit_type& orbit = all_orbits[n];
             hits_type& hits = all_hits[n];
-            slab.run(hits, orbit, amap, seeds[n], max_iter, nhits);
+            unsigned long int iter_ct;
+            slab.run(hits, orbit, amap, seeds[n], iter_ct, max_iter, nhits);
             ++tbb_progress_counter;
         }
     });

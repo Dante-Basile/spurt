@@ -19,6 +19,7 @@ std::string filename;
 
 using namespace spurt;
 
+typedef unsigned long int uli;
 typedef symplectic4D map_type;
 typedef map_type::state_type state_type;
 typedef map_type::bounds_type bounds_type;
@@ -133,7 +134,8 @@ int main(int argc, const char* argv[]) {
             std::vector<state_type> hits;
             std::vector<state_type> orbit;
             progress.update(tbb_progress_counter);
-            slab.run(hits, orbit, amap, seeds[n], max_iter, nhits);
+            uli iter_ct = 0;
+            slab.run(hits, orbit, amap, seeds[n], iter_ct, max_iter, nhits);
             ++tbb_progress_counter;
 
             if (hits.size() < min_hits) continue;
@@ -155,12 +157,12 @@ int main(int argc, const char* argv[]) {
             name = filename + "_iter_ct_n=" + std::to_string(n)
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".txt";
             std::ofstream fs(name);
-            fs << slab.iter_ct << std::endl;
+            fs << iter_ct << std::endl;
             fs.close();
 
             std::cout << "\nhits contains " << hits.size() << " points and "
                 << "orbit contains " << orbit.size() << " points and "
-                << "has iteration count " << slab.iter_ct << " iterations\n";
+                << "has iteration count " << iter_ct << " iterations\n";
 
         }
     });

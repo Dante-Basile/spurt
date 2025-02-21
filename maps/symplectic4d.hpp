@@ -199,15 +199,14 @@ public:
     typedef unsigned long int uli;
     typedef vec3 point_type;
     typedef vec8 state_type;
-    uli iter_ct;
 
     slab_map(int _dim=3, double _thickness=1.0e-4)
         : thickness(_thickness), section_dim(_dim) {}
 
     template<typename Map>
     void run(std::vector<state_type>& hits, std::vector<state_type>& orbit,
-             const Map& map, const state_type& seed, int max_iter=1000,
-             int nhits=-1) {
+             const Map& map, const state_type& seed, uli& iter_ct,
+             int max_iter=1000, int nhits=-1) {
         hits.clear();
         orbit.clear();
         hits.push_back(seed);
@@ -222,8 +221,8 @@ private:
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
                     std::vector<state_type>& orbit, const Map& map,
-                    const state_type& seed, uli& iter_cts, int niter) {
-        map.map(seed, orbit, iter_cts, niter);
+                    const state_type& seed, uli& iter_ct, int niter) {
+        map.map(seed, orbit, iter_ct, niter);
         for (int i=0; i<orbit.size(); ++i) {
             if (std::abs(orbit[i][section_dim]) <= thickness) {
                 hits.push_back(orbit[i]);
