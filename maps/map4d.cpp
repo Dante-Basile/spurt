@@ -144,7 +144,7 @@ int main(int argc, const char* argv[]) {
             const double& mean = meanvar.first;
             if (max_mean_gap > 0 && mean > max_mean_gap) continue;
 
-            std::array<int, 2> dims{ {4, (int)hits.size()} };
+            std::array<int, 2> dims{ {8, (int)hits.size()} };
             std::string name = filename + "_hits_n=" + std::to_string(n)
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
             nrrd_utils::writeNrrdFromContainers(reinterpret_cast<double *>(&hits[0]), name, dims);
@@ -166,7 +166,7 @@ int main(int argc, const char* argv[]) {
 
         }
     });
-    // for (int n=0; n<nsamples; ++n) {
+    // for (int n=0; n<nsamples; ++n) {FFF4
     //     progress.update(n);
     //     orbit_type& orbit = all_orbits[n];
     //     slab.run(orbit, amap, seeds[n], max_iter, nhits);
