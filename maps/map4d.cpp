@@ -133,6 +133,7 @@ int main(int argc, const char* argv[]) {
             std::vector<state_type> hits;
             std::vector<state_type> orbit;
             progress.update(tbb_progress_counter);
+            // TODO: pass rot_ct here, sync issues when in slab class
             slab.run(hits, orbit, amap, seeds[n], max_iter, nhits);
             ++tbb_progress_counter;
 

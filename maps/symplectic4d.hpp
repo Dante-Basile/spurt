@@ -206,6 +206,7 @@ public:
         : thickness(_thickness), section_dim(_dim) {}
 
     template<typename Map>
+    // TODO: pass rot_ct here, sync issues when in slab class
     void run(std::vector<state_type>& hits, std::vector<state_type>& orbit,
              const Map& map, const state_type& seed, int max_iter=1000,
              int nhits=-1) {
