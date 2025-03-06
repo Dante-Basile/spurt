@@ -25,11 +25,39 @@ private:
         p2 += k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi * (q1 + q2));
     }
 
+    void forward(double& p1, double& p2, double& q1, double& q2,
+                 double& p1s, double& p2s, double& q1s, double& q2s) const {
+        q1 += p1;
+        q1s += p1;
+        q2 += p2;
+        q2s += p2;
+        double fp1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi * (q1 + q2));
+        p1 += fp1;
+        p1s += fp1;
+        double fp2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi * (q1 + q2));
+        p2 += fp2;
+        p2s += fp2;
+    }
+
     void backward(double& p1, double& p2, double& q1, double& q2) const {
         p1 -= k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi *(q1 + q2));
         p2 -= k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi *(q1 + q2));
         q1 -= p1;
         q2 -= p2;
+    }
+
+    void backward(double& p1, double& p2, double& q1, double& q2,
+                  double& p1s, double& p2s, double& q1s, double& q2s) const {
+        double bp1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi *(q1 + q2));
+        p1 -= bp1;
+        p1s -= bp1;
+        double bp2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi *(q1 + q2));
+        p2 -= bp2;
+        p2s -= bp2;
+        q1 -= p1;
+        q1s -= p1;
+        q2 -= p2;
+        q2s -= p2;
     }
 
     deriv_type forwardJ(double p1, double p2, double q1, double q2) const {
@@ -123,6 +151,34 @@ public:
     }
 
     void map(const state_type& x,
+             const state_type& s_0,
+             std::vector< state_type >& hits,
+             std::vector< state_type >& sum,
+             int n = 1) const {
+        hits.resize(std::abs<int>(n));
+        state_type y(x);
+        state_type s_i(s_0);
+        if (n>0) {
+            for (int i=0; i<n; ++i) {
+                forward(y[0], y[1], y[2], y[3],
+                        s_i[0], s_i[1], s_i[2], s_i[3]);
+                to_domain(y);
+                hits[i] = y;
+                sum[i] = s_i;
+            }
+        }
+        else if (n<0) {
+            for (int i=n; i<0; ++i) {
+                backward(y[0], y[1], y[2], y[3],
+                         s_i[0], s_i[1], s_i[2], s_i[3]);
+                to_domain(y);
+                hits[i] = y;
+                sum[i] = s_i;
+            }
+        }
+    }
+
+    void map(const state_type& x,
              std::vector<std::pair<state_type, deriv_type> >& out, int niter,
              double eps=0) const {
         out.resize(std::abs<int>(niter));
@@ -184,24 +240,34 @@ public:
         : thickness(_thickness), section_dim(_dim) {}
 
     template<typename Map>
-    void run(std::vector<state_type>& hits, std::vector<state_type>& orbit,
+    void run(std::vector<state_type>& hits,
+             std::vector<state_type>& orbit,
+             std::vector<state_type>& sum,
              const Map& map, const state_type& seed, int max_iter=1000,
              int nhits=-1) {
         hits.clear();
         orbit.clear();
         hits.push_back(seed);
         orbit.push_back(seed);
+        state_type s_0;
+        for (int i = 0; i < s_0.size(); ++i) {
+            s_0[i] = 0;
+        }
+        sum.push_back(s_0);
         state_type s = seed;
         map.to_domain(s);
-        s = _run(hits, orbit, map, s, max_iter);
+        s = _run(hits, orbit, sum, map, s, s_0, max_iter);
     }
 
 private:
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
-                    std::vector<state_type>& orbit, const Map& map,
-                    const state_type& seed, int niter) {
-        map.map(seed, orbit, niter);
+                    std::vector<state_type>& orbit,
+                    std::vector<state_type>& sum,
+                    const Map& map,
+                    const state_type& seed,
+                    const state_type& s_0, int niter) {
+        map.map(seed, s_0, orbit, sum, niter);
         for (int i=0; i<orbit.size(); ++i) {
             if (std::abs(orbit[i][section_dim]) <= thickness) {
                 hits.push_back(orbit[i]);

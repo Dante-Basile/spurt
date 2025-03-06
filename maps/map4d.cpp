@@ -132,8 +132,9 @@ int main(int argc, const char* argv[]) {
         for (int n=r.begin(); n!=r.end(); ++n) {
             std::vector<state_type> hits;
             std::vector<state_type> orbit;
+            std::vector<state_type> sum;
             progress.update(tbb_progress_counter);
-            slab.run(hits, orbit, amap, seeds[n], max_iter, nhits);
+            slab.run(hits, orbit, sum, amap, seeds[n], max_iter, nhits);
             ++tbb_progress_counter;
 
             if (hits.size() < min_hits) continue;
