@@ -23,7 +23,7 @@ typedef unsigned long int uli;
 typedef symplectic4D map_type;
 typedef map_type::state_type state_type;
 typedef map_type::bounds_type bounds_type;
-typedef point_locator<state_type, long> NNlocator_type;
+typedef point_locator<vec4, long> NNlocator_type;
 typedef NNlocator_type::point_type point_type;
 typedef std::vector<state_type> orbit_type;
 
@@ -32,7 +32,11 @@ std::pair<double, double> compute_gaps(orbit_type& orb) {
     // timer.start();
     std::vector<point_type> points;
     for (int i=0; i<orb.size(); ++i) {
-        points.push_back(point_type(orb[i], i));
+        vec4 p;
+        for (int j = 0; j < 4; ++j) {
+            vec4 p[j] = orb[i][j];
+        }
+        points.push_back(point_type(p, i));
     }
     NNlocator_type locator(points.begin(), points.end());
     // timer.stop();
@@ -41,7 +45,7 @@ std::pair<double, double> compute_gaps(orbit_type& orb) {
     std::vector<point_type> nns;
     std::vector<double> gaps;
     // timer.start();
-    for (auto it=orb.begin(); it!=orb.end(); ++it) {
+    for (auto it=points.begin(); it!=points.end(); ++it) {
         nns.clear();
         locator.find_n_nearest_points(nns, *it, 3);
         
