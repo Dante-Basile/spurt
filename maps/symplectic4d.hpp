@@ -156,6 +156,7 @@ public:
              std::vector< state_type >& sum,
              int n = 1) const {
         hits.resize(std::abs<int>(n));
+        sum.resize(std::abs<int>(n));
         state_type y(x);
         state_type s_i(s_0);
         if (n>0) {
@@ -286,7 +287,7 @@ private:
         }
         return orbit.back();
     }
-    
+
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
                     std::vector<state_type>& orbit,
