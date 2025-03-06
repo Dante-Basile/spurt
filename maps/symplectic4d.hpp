@@ -240,6 +240,19 @@ public:
         : thickness(_thickness), section_dim(_dim) {}
 
     template<typename Map>
+    void run(std::vector<state_type>& hits, std::vector<state_type>& orbit,
+                const Map& map, const state_type& seed, int max_iter=1000,
+                int nhits=-1) {
+        hits.clear();
+        orbit.clear();
+        hits.push_back(seed);
+        orbit.push_back(seed);
+        state_type s = seed;
+        map.to_domain(s);
+        s = _run(hits, orbit, map, s, max_iter);
+    }
+    
+    template<typename Map>
     void run(std::vector<state_type>& hits,
              std::vector<state_type>& orbit,
              std::vector<state_type>& sum,
@@ -260,6 +273,20 @@ public:
     }
 
 private:
+
+    template<typename Map>
+    state_type _run(std::vector<state_type>& hits,
+                    std::vector<state_type>& orbit, const Map& map,
+                    const state_type& seed, int niter) {
+        map.map(seed, orbit, niter);
+        for (int i=0; i<orbit.size(); ++i) {
+            if (std::abs(orbit[i][section_dim]) <= thickness) {
+                hits.push_back(orbit[i]);
+            }
+        }
+        return orbit.back();
+    }
+    
     template<typename Map>
     state_type _run(std::vector<state_type>& hits,
                     std::vector<state_type>& orbit,
