@@ -81,6 +81,8 @@ private:
 public:
 
     static void to_range(double& x) {
+        // std::cout << x << std::endl;
+        // normal scale
         if (x < -0.5 || x >= 0.5) {
             x -= std::floor(x);
             if (x >= 0.5) x -= 1;
@@ -228,6 +230,13 @@ private:
                 hits.push_back(orbit[i]);
             }
         }
+        // for (int i = 0; i < orbit.size(); ++i) {
+        //     for (int j = 0; j < orbit[i].size(); ++j) {
+        //         std::cout << orbit[i][j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // }
+        // normal scale
         return orbit.back();
     }
 };

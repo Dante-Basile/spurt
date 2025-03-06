@@ -136,19 +136,67 @@ int main(int argc, const char* argv[]) {
             progress.update(tbb_progress_counter);
             uli iter_ct = 0;
             slab.run(hits, orbit, amap, seeds[n], iter_ct, max_iter, nhits);
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // normal scale
             ++tbb_progress_counter;
 
             if (hits.size() < min_hits) continue;
 
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // normal scale
+
             std::pair<double, double> meanvar = compute_gaps(hits);
+
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // normal scale
+
             const double& mean = meanvar.first;
+
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // normal scale
+
             if (max_mean_gap > 0 && mean > max_mean_gap) continue;
+
+            for (int i = 0; i < orbit.size(); ++i) {
+                for (int j = 0; j < orbit[i].size(); ++j) {
+                    std::cout << orbit[i][j] << " "; 
+                }
+                std::cout << std::endl;
+            }
+            // bad scale
 
             std::array<int, 2> dims{ {8, (int)hits.size()} };
             std::string name = filename + "_hits_n=" + std::to_string(n)
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
             nrrd_utils::writeNrrdFromContainers(reinterpret_cast<double *>(&hits[0]), name, dims);
 
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // bad scale
             dims[1] = (int)orbit.size();
             name = filename + "_whole_orbit_n=" + std::to_string(n)
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
