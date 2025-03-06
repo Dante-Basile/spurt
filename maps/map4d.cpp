@@ -153,6 +153,11 @@ int main(int argc, const char* argv[]) {
                 + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
             nrrd_utils::writeNrrdFromContainers(reinterpret_cast<double *>(&orbit[0]), name, dims);
 
+            dims[1] = (int)orbit.size();
+            name = filename + "_whole_sum_n=" + std::to_string(n)
+                + "_g=" + std::to_string(mean) + "_s=" + std::to_string(val) + ".nrrd";
+            nrrd_utils::writeNrrdFromContainers(reinterpret_cast<double *>(&sum[0]), name, dims);
+
             std::cout << "\nhits contains " << hits.size() << " points and "
                 << "orbit contains " << orbit.size() << " points\n";
 
