@@ -141,7 +141,24 @@ int main(int argc, const char* argv[]) {
 
             std::pair<double, double> meanvar = compute_gaps(hits);
             const double& mean = meanvar.first;
+
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // full scale
+
             if (max_mean_gap > 0 && mean > max_mean_gap) continue;
+
+            // for (int i = 0; i < orbit.size(); ++i) {
+            //     for (int j = 0; j < orbit[i].size(); ++j) {
+            //         std::cout << orbit[i][j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
+            // restricted scale
 
             std::array<int, 2> dims{ {4, (int)hits.size()} };
             std::string name = filename + "_hits_n=" + std::to_string(n)
