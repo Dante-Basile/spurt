@@ -99,6 +99,8 @@ int main(int argc, const char* argv[]) {
         exit(1);
     }
 
+    dim = -1;
+
     map_type amap(k1, k2, eps);
     slab_map slab(dim, thickness);
     typedef std::vector<state_type> hits_type;
@@ -114,12 +116,24 @@ int main(int argc, const char* argv[]) {
     std::mt19937 gen(val); // Standard mersenne_twister_engine seeded with r()
     std::uniform_real_distribution<> uniform(0, 1);
 
-    for (int n=0; n<nsamples; ++n) {
-        seeds[n][dim] = 0;
-        for (int d=0; d<4; ++d) {
-            if (d==dim) continue;
-            double v = uniform(gen);
-            seeds[n][d] = min[d] + v*(max[d]-min[d]);
+    if (dim == -1) {
+        for (int n=0; n<nsamples; ++n) {
+            // seeds[n][dim] = 0;
+            for (int d=0; d<4; ++d) {
+                // if (d==dim) continue;
+                double v = uniform(gen);
+                seeds[n][d] = min[d] + v*(max[d]-min[d]);
+            }
+        }
+    }
+    else {
+        for (int n=0; n<nsamples; ++n) {
+            seeds[n][dim] = 0;
+            for (int d=0; d<4; ++d) {
+                if (d==dim) continue;
+                double v = uniform(gen);
+                seeds[n][d] = min[d] + v*(max[d]-min[d]);
+            }
         }
     }
 
