@@ -298,13 +298,7 @@ private:
         map.map(seed, s_0, orbit, sum, niter);
         for (int i=0; i<orbit.size(); ++i) {
             if (section_dim == -1) {
-                bool dim_fit = false;
-                for (int d=0; d<4; ++d) {
-                    if (std::abs(orbit[i][d]) <= thickness) {
-                        dim_fit = true;
-                    }
-                }
-                if (dim_fit) {
+                if (norm(orbit[i]) <= thickness) {
                     hits.push_back(orbit[i]);
                 }
             }
