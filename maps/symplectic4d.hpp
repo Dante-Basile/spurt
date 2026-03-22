@@ -28,15 +28,15 @@ private:
     void forward(double& p1, double& p2, double& q1, double& q2,
                  double& p1s, double& p2s, double& q1s, double& q2s) const {
         q1 += p1;
-        q1s += p1;
+        q1s += std::abs(p1);
         q2 += p2;
-        q2s += p2;
+        q2s += std::abs(p2);
         double fp1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi * (q1 + q2));
         p1 += fp1;
-        p1s += fp1;
+        p1s += std::abs(fp1);
         double fp2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi * (q1 + q2));
         p2 += fp2;
-        p2s += fp2;
+        p2s += std::abs(fp2);
     }
 
     void backward(double& p1, double& p2, double& q1, double& q2) const {
@@ -50,14 +50,14 @@ private:
                   double& p1s, double& p2s, double& q1s, double& q2s) const {
         double bp1 = k1/twopi * sin(twopi * q1) + eps/twopi * sin(twopi *(q1 + q2));
         p1 -= bp1;
-        p1s -= bp1;
+        p1s -= std::abs(bp1);
         double bp2 = k2/twopi * sin(twopi * q2) + eps/twopi * sin(twopi *(q1 + q2));
         p2 -= bp2;
-        p2s -= bp2;
+        p2s -= std::abs(bp2);
         q1 -= p1;
-        q1s -= p1;
+        q1s -= std::abs(p1);
         q2 -= p2;
-        q2s -= p2;
+        q2s -= std::abs(p2);
     }
 
     deriv_type forwardJ(double p1, double p2, double q1, double q2) const {
