@@ -118,9 +118,9 @@ int main(int argc, const char* argv[]) {
 
     if (dim == -1) {
         for (int n=0; n<nsamples; ++n) {
-            // seeds[n][dim] = 0;
+            seeds[n][3] = 0;
             for (int d=0; d<4; ++d) {
-                // if (d==dim) continue;
+                if (d==3) continue;
                 double v = uniform(gen);
                 seeds[n][d] = min[d] + v*(max[d]-min[d]);
             }
