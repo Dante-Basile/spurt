@@ -1,4 +1,6 @@
 #include "point.h"
+#include "iostream"
+using namespace std;
 
 /*
 There are 2 indices here.
