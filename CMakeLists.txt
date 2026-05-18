@@ -62,7 +62,7 @@ set( Boost_USE_STATIC_RUNTIME   OFF )
 find_package( Boost 1.55 REQUIRED
               COMPONENTS
               filesystem
-              system
+            #   system
               program_options )  # C++ goodies
 find_package( Eigen  REQUIRED )  # linear algebra
 find_package( LAPACK REQUIRED )  # linear algebra
